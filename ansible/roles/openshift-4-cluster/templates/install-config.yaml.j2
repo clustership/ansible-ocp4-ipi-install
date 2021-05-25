@@ -1,0 +1,57 @@
+apiVersion: v1
+baseDomain: {{ public_domain }}
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 0
+  platform:
+    openstack:
+      type: ocp.worker
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  platform: {}
+  replicas: {{ master_count }}
+  platform:
+    openstack:
+      type: m1.xlarge
+metadata:
+  name: {{ cluster_name }}
+networking:
+  clusterNetworks:
+  - cidr: 10.128.0.0/14
+    hostSubnetLength: 9
+  machineNetwork:
+  - cidr: {{ vn_subnet }}/24
+  serviceCIDR: 172.30.0.0/16
+  type: {{ sdn_plugin_name }}
+platform:
+  openstack:
+    apiVIP: {{ api_vip }}
+    cloud: phuet
+    computeFlavor: m1.xlarge
+    externalDNS: null
+    externalNetwork: public
+    ingressVIP: {{ ingress_vip }}
+    lbFloatingIP: {{ lb_floating_ip }}
+    ingressFloatingIP: {{ ingress_floating_ip }}
+publish: External
+pullSecret:
+  '{{ image_pull_secret }}'
+sshKey: |
+  {{ ssh_public_key }}
+{% if install_config_additionalTrustBundle is defined %}
+additionalTrustBundle: |
+  {{ install_config_additionalTrustBundle |indent(width=2) }}
+{% endif %}
+{%- if install_config_imageContentSources is defined %}
+imageContentSources:
+  {{ install_config_imageContentSources  | to_nice_yaml(indent=2) | indent(width=2) }}
+{% endif %}
+{%- if install_config_proxy is defined %}
+proxy:
+  {{ install_config_proxy  | to_nice_yaml(indent=2) | indent(width=2) }}
+{% endif %}

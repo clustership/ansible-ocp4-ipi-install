@@ -1,0 +1,39 @@
+---
+
+- name: Check add-ons.yml
+  stat:
+    path: "{{ playbook_dir }}/../add-ons.yml"
+  register: add_ons_yml
+  tags:
+    - post-install
+    - add-ons
+    - post-install-add-ons
+
+- name: Enable add-ons
+  set_fact:
+    add_ons_enabled: true
+  when: add_ons_yml.stat.exists
+  tags:
+    - post-install
+    - add-ons
+    - post-install-add-ons
+
+- name: Download OpenShift Artifacts
+  include: download-openshift-artifacts.yml
+  tags: download-openshift-artifacts
+
+- name: Create ignition files
+  include: create-ignition.yml
+  vars:
+    ssh_public_key: "{{ lookup('file', '{{ ssh_public_key_location }}.pub') }}"
+  tags: ignition
+
+- name: Create openshift cluster
+  shell:
+    cmd: |
+      echo "{{ openshift_install_command }} --dir={{ openshift_install_dir }} -log-level=debug create cluster"
+  tags: create-cluster
+
+# - name: Include post installation tasks
+#   include: post-install.yml
+#   tags: post-install

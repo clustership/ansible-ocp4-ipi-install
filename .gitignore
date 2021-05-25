@@ -1,0 +1,5 @@
+cluster.yml
+.DS_Store
+certificate/
+clouds.yaml
+**/clouds.yaml
